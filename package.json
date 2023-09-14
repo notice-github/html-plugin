@@ -1,0 +1,37 @@
+{
+	"name": "html-plugin",
+	"version": "1.0.0",
+	"description": "",
+	"homepage": "https://notice.studio",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/notice-github/html-plugin.git"
+	},
+	"bugs": {
+		"url": "https://github.com/notice-github/html-plugin/issues"
+	},
+	"author": {
+		"name": "Notice Studio",
+		"email": "contact@notice.studio",
+		"url": "https://notice.studio"
+	},
+	"keywords": [
+		"notice",
+		"html",
+		"integration"
+	],
+	"scripts": {
+		"dev": "concurrently \"nodemon --exec 'pnpm run build' --watch ./src/*.ts\" \"serve -l 4242 ./lib\"",
+		"build": "node ./scripts/build.mjs",
+		"test": "tsc --noEmit",
+		"prepublishOnly": "pnpm run build"
+	},
+	"devDependencies": {
+		"@types/node": "^20.6.0",
+		"concurrently": "^8.2.1",
+		"esbuild": "^0.19.3",
+		"nodemon": "^3.0.1",
+		"serve": "^14.2.1",
+		"typescript": "^5.2.2"
+	}
+}
