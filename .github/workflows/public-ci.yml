@@ -1,0 +1,42 @@
+name: Publish CI
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PNPM 8.5
+        uses: pnpm/action-setup@v2.4
+        with:
+          version: 8.5
+
+      - name: Setup NodeJS 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Bundle library
+        run: pnpm run build
+
+      - name: Upload files
+        uses: sand4rt/ftp-deployer@v1.7
+        with:
+          sftp: false
+          host: storage.bunnycdn.com
+          port: 21
+          username: bundle-notice
+          password: ${{ secrets.BUNNY_FTP_PWD }}
+          local_folder: ./lib
+          cleanup: true
+          passive: true
+
+      - name: Purge Cache
+        run: 'curl -X POST https://api.bunny.net/pullzone/1600723/purgeCache -H "AccessKey: ${{ secrets.BUNNY_ACCESS_KEY }}"'
