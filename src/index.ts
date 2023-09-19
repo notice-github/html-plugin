@@ -1,60 +1,32 @@
+import { NWeb } from '@notice-org/tools/lib/web'
+
 async function injectNotice(elem: HTMLElement) {
 	const projectId = elem.attributes.getNamedItem('project-id')
 	if (!projectId || !projectId.value) return
 
-	const url = new URL(`${process.env.SERVER_URL}/pages/${projectId.value}/full`)
+	const browserParams = new URLSearchParams(document.location.href.split('?')[1])
+	const queryParams = new URLSearchParams()
 
-	const searchParams = new URLSearchParams(document.location.href.split('?')[1])
-	if (searchParams.has('page')) {
-		const pageId = searchParams.get('page')?.match?.(/^[^#]*/)?.[0]
-		if (pageId != null) url.searchParams.append('page', pageId)
-	}
-	if (searchParams.has('lang')) {
-		const lang = searchParams.get('lang')?.match?.(/^[^#]*/)?.[0]
-		if (lang != null) url.searchParams.append('lang', lang)
-	}
+	NWeb.useParam('lang', queryParams, { props: elem.attributes, params: browserParams })
+	NWeb.useParam('theme', queryParams, {
+		props: elem.attributes,
+		params: browserParams,
+		default: localStorage.getItem('NTC_theme'),
+	})
+	NWeb.useParam('page', queryParams, { props: elem.attributes, params: browserParams })
 
-	const theme = localStorage.getItem('NTC_theme')
-	if (theme != null) url.searchParams.append('theme', theme === 'dark' ? 'dark' : 'light')
+	NWeb.queryData(projectId.value, queryParams, new AbortController()).then((res) => {
+		if (!res) return
+		elem.outerHTML = res.data.body
 
-	const data = await fetch(url.href).then((res) => res.json())
-
-	// Head
-	const parser = new DOMParser()
-	const dom = parser.parseFromString(data.head, 'text/html')
-	for (let node of dom.head.childNodes) {
-		if (!(node instanceof HTMLElement)) continue
-
-		if (node.nodeName === 'TITLE') {
-			document.title = node.innerText
-			continue
-		} else if (node.nodeName === 'LINK' && node.getAttribute('rel') === 'icon') {
-			document.querySelectorAll('link[rel="icon"]').forEach((el) => el.remove())
+		// TMP
+		const integration = elem.attributes.getNamedItem('notice-integration')?.value || undefined
+		if (integration != undefined) {
+			setTimeout(() => {
+				;(window as any).$NTC[res.data.rootId].integrationType = integration
+			}, 100)
 		}
-
-		document.head.appendChild(node)
-	}
-
-	// Style
-	const style = document.createElement('style')
-	style.id = `NTC_style-${data.rootId}`
-	style.innerHTML = data.styles
-	document.head.appendChild(style)
-
-	// Script
-	const script = document.createElement('script')
-	script.innerHTML = data.scripts
-	document.head.appendChild(script)
-
-	// Body
-	elem.outerHTML = data.body
-
-	const integration = elem.attributes.getNamedItem('notice-integration')?.value || undefined
-	if (integration != undefined) {
-		setTimeout(() => {
-			;(window as any).$NTC[data.rootId].integrationType = integration
-		}, 100)
-	}
+	})
 }
 
 ;(() => {
