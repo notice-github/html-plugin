@@ -25,6 +25,9 @@ jobs:
 
       - name: Bundle library
         run: pnpm run build
+        env:
+          STAGE: production
+          NODE_ENV: production
 
       - name: Upload files
         uses: sand4rt/ftp-deployer@v1.7
