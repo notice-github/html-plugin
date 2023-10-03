@@ -18,6 +18,14 @@ if (window.__NTC_BUNDLE_LOAD == undefined) {
 			const browserParams = new URLSearchParams(document.location.href.split('?')[1])
 			const queryParams = new URLSearchParams()
 
+			// TMP
+			let integration = elem.attributes.getNamedItem('notice-integration')?.value
+			if (elem.classList.contains('wp-block-noticefaq-block-noticefaq')) integration = 'wordpress-plugin'
+			if (integration === 'wordpress-plugin' && browserParams.has('article')) {
+				browserParams.set('page', browserParams.get('article')!)
+				browserParams.delete('article')
+			}
+
 			NWeb.useParam('lang', queryParams, { props: elem.attributes, params: browserParams })
 			NWeb.useParam('theme', queryParams, {
 				props: elem.attributes,
@@ -31,10 +39,11 @@ if (window.__NTC_BUNDLE_LOAD == undefined) {
 				elem.outerHTML = res.data.body
 
 				// TMP
-				const integration = elem.attributes.getNamedItem('notice-integration')?.value || undefined
-				if (integration != undefined) {
+				let it = elem.attributes.getNamedItem('notice-integration')?.value || undefined
+				if (elem.classList.contains('wp-block-noticefaq-block-noticefaq')) it = 'wordpress-plugin'
+				if (it != undefined) {
 					setTimeout(() => {
-						window.$NTC[res.data.rootId].integrationType = integration
+						window.$NTC[res.data.rootId].integrationType = it
 					}, 100)
 				}
 			})
