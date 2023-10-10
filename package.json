@@ -1,7 +1,7 @@
 {
-	"name": "html-plugin",
+	"name": "@notice-org/html",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Script made to integrate Notice everywhere ",
 	"homepage": "https://notice.studio",
 	"repository": {
 		"type": "git",
@@ -12,7 +12,7 @@
 	},
 	"author": {
 		"name": "Notice Studio",
-		"email": "contact@notice.studio",
+		"email": "jonas.roussel@notice.studio",
 		"url": "https://notice.studio"
 	},
 	"keywords": [
@@ -27,12 +27,12 @@
 		"prepublishOnly": "pnpm run build"
 	},
 	"dependencies": {
-		"@notice-org/tools": "^1.1.2"
+		"@notice-org/ntc": "^1.0.2"
 	},
 	"devDependencies": {
-		"@types/node": "^20.6.2",
+		"@types/node": "^20.8.4",
 		"concurrently": "^8.2.1",
-		"esbuild": "^0.19.3",
+		"esbuild": "^0.19.4",
 		"nodemon": "^3.0.1",
 		"serve": "^14.2.1",
 		"typescript": "^5.2.2"

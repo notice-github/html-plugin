@@ -1,4 +1,4 @@
-import { NWeb } from '@notice-org/tools/lib/web'
+import { NTCBrowser } from '@notice-org/ntc'
 
 declare global {
 	interface Window {
@@ -12,40 +12,25 @@ if (window.__NTC_BUNDLE_LOAD == undefined) {
 		const targetContainers = document.querySelectorAll<HTMLElement>('.notice-target-container')
 
 		targetContainers.forEach(async function (elem: HTMLElement) {
-			const projectId = elem.attributes.getNamedItem('project-id')
-			if (!projectId || !projectId.value) return
-
-			const browserParams = new URLSearchParams(document.location.href.split('?')[1])
-			const queryParams = new URLSearchParams()
-
-			// TMP
-			let integration = elem.attributes.getNamedItem('notice-integration')?.value
-			if (elem.classList.contains('wp-block-noticefaq-block-noticefaq')) integration = 'wordpress-plugin'
-			if (integration === 'wordpress-plugin' && browserParams.has('article')) {
-				browserParams.set('page', browserParams.get('article')!)
-				browserParams.delete('article')
+			const attributes: Record<string, string> = {}
+			for (let i = 0; i < elem.attributes.length; i++) {
+				const attr = elem.attributes.item(i)
+				if (!attr) continue
+				attributes[attr.name.replace(/\W+(.)/g, (_, ch) => ch.toUpperCase())] = attr.value
 			}
 
-			NWeb.useParam('lang', queryParams, { props: elem.attributes, params: browserParams })
-			NWeb.useParam('theme', queryParams, {
-				props: elem.attributes,
-				params: browserParams,
-				default: localStorage.getItem('NTC_theme'),
-			})
-			NWeb.useParam('page', queryParams, { props: elem.attributes, params: browserParams })
+			let { projectId, noticeIntegration, ...params } = attributes
 
-			NWeb.queryData(projectId.value, queryParams, new AbortController()).then((res) => {
-				if (!res) return
-				elem.outerHTML = res.data.body
+			if (!projectId) return
 
-				// TMP
-				let it = elem.attributes.getNamedItem('notice-integration')?.value || undefined
-				if (elem.classList.contains('wp-block-noticefaq-block-noticefaq')) it = 'wordpress-plugin'
-				if (it != undefined) {
-					setTimeout(() => {
-						window.$NTC[res.data.rootId].integrationType = it
-					}, 100)
-				}
+			// Wordress exception
+			if (elem.classList.contains('wp-block-noticefaq-block-noticefaq')) noticeIntegration = 'wordpress-plugin'
+
+			if (noticeIntegration) params['integration'] = noticeIntegration
+
+			NTCBrowser.queryDocument(projectId, params).then((res) => {
+				if (!res.ok) return
+				elem.outerHTML = res.data
 			})
 		})
 	}

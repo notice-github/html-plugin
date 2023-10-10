@@ -1,7 +1,7 @@
-name: Publish CI
+name: Release CI
 on:
-  push:
-    branches: ['main']
+  release:
+    types: [published]
 
 jobs:
   publish:
